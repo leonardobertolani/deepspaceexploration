@@ -2,12 +2,6 @@
 #include "hls_stream.h"
 #include "hls_vector.h"
 
-// total 47768
-// load_pad 20237
-// read_col 8668
-// pad_col 8886
-// real 21373
-// latency 4154 - 5497
 void spmv_vec_compute_pad(spm_info info, hls::stream<col_len>& cols_len, hls::stream<int4_vec>& ir_padded, hls::stream<double_vec>& pr_padded, hls::stream<double_vec>& x, hls::stream<double_vec>& y, DTYPE* result) {
     int n_cols = info.n;
     int vec_to_read = n_cols >> 2;
@@ -16,7 +10,6 @@ void spmv_vec_compute_pad(spm_info info, hls::stream<col_len>& cols_len, hls::st
     }
 
     SPMVEC_OUT: for (int i = 0; i < vec_to_read; i++) {
-        //#pragma HLS PIPELINE // this pragma should be invalid i think. but somehow it cuts 200 clocks of latency
         #pragma HLS LOOP_TRIPCOUNT min=10 max=60
 
         double_vec curr_x = x.read();
@@ -64,7 +57,6 @@ void spmv_vec_compute_pad(spm_info info, hls::stream<col_len>& cols_len, hls::st
                 int4_vec ir_vec = ir_padded.read();
                 SPMVEC_COMP_SINGLE: for (int j = 0; j < cl.cl; j++) {
                     #pragma HLS PIPELINE off
-                    // #pragma HLS LOOP_TRIPCOUNT min=0 max=3                
                     #pragma HLS DEPENDENCE variable=result type=inter false
                     int iri = ir_vec[j];
                     double t = x_val * m_vec[j];
@@ -168,17 +160,6 @@ void spmv_vec_writeback_nnv(spm_info info, hls::stream<double_vec>& y_stream, do
 }
 
 void spmv_vec_writeback(spm_info info, hls::stream<double_vec>& y_stream, double_vec y[], flag a, flag new_vec) {
-    /*
-    if (!a.is_zero() && !new_vec.is_zero()) {
-        spmv_vec_writeback_a_nv(info ,y_stream, y);
-    } else if (a.is_zero() && !new_vec.is_zero()) {
-        spmv_vec_writeback_na_nv(info ,y_stream, y);
-    } else if (!a.is_zero() && new_vec.is_zero()) {
-        spmv_vec_writeback_a_nnv(info ,y_stream, y);
-    } else {
-        spmv_vec_writeback_na_nnv(info ,y_stream, y);
-    }
-    */
     if (!a.is_zero() && !new_vec.is_zero()) {
         spmv_vec_writeback_a_nv(info, y_stream, y);
     } else if (a.is_zero() && !new_vec.is_zero()) {

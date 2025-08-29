@@ -23,10 +23,6 @@ bool v_eq(DTYPE* x1, DTYPE* x2, int len) {
 	return true;
 }
 
-
-
-
-
 int main() {
     
     DTYPE pr[572];

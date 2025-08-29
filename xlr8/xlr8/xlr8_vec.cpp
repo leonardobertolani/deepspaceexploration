@@ -149,27 +149,6 @@ void xlr8_vec_load_padded(spm_info info, hls::stream<int_vec>& jc, hls::stream<i
                 #pragma HLS ARRAY_PARTITION variable=prv_end dim=1 type=complete
                 int irv_end[4] = {info.m, info.m + 1, info.m + 2, info.m + 3};
                 #pragma HLS ARRAY_PARTITION variable=irv_end dim=1 type=complete
-                /*PAD_COL: for (int j = 0; j < 4; j++) {
-                    #pragma HLS UNROLL off
-                    #pragma HLS PIPELINE off
-                    if (j < c_rem) {
-                        if (pr_idx == 4) {
-                            curr_pr = pr.read();
-                            pr_idx = 0;
-                        }
-                        if (ir_idx == 8) {
-                            curr_ir = ir.read();
-                            ir_idx = 0;
-                        }
-                        t_end[j] = curr_pr[pr_idx];
-                        t_ir_end[j] = curr_ir[ir_idx];
-                        pr_idx++;
-                        ir_idx++;
-                    } else {
-                        t_end[j] = 0.0;
-                        t_ir_end[j] = info.m + j;
-                    }
-                }*/
 
                 PAD_COL: for (int j = 0; j < c_rem; j++) {
                     #pragma HLS PIPELINE off

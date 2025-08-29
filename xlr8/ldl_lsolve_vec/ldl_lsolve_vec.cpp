@@ -27,12 +27,6 @@ void lsolve_vec_compute_pad(spm_info info, hls::stream<col_len>& cols_len, hls::
                 x_vec[1] = xv;
                 x_vec[2] = xv;
                 x_vec[3] = xv;                
-                //COMPUTE_XVEC_LSOLVE: for (int j = 0; j < 4; j++) {
-                //    #pragma HLS UNROLL
-                //    int xi = i << 2;
-                //    x_vec[j] = result[xi + z];
-                //}
-                
                 COMPUTE_COL_LSOLVE: for (int j = 0; j < vec_to_read; j++) {
                     #pragma HLS PIPELINE II=4
                     #pragma HLS LOOP_TRIPCOUNT min=0 max=10 avg=1
@@ -40,25 +34,20 @@ void lsolve_vec_compute_pad(spm_info info, hls::stream<col_len>& cols_len, hls::
 
                     double_vec m_vec = pr_padded.read();
                     double_vec t = m_vec * x_vec;
-                    //#pragma HLS BIND_OP op=dmul impl=maxdsp variable=t
 
                     int4_vec ir_vec = ir_padded.read();
                     double temp[4];
                     #pragma HLS ARRAY_PARTITION variable=temp dim=1 type=complete
-                    //#pragma HLS BIND_OP op=dsub impl=fulldsp variable=temp
 
                     READ_B_LOOP_LSOLVE: for (int k = 0; k < 4; k++) {
-                        //#pragma HLS UNROLL
                         temp[k] = result[ir_vec[k]];
                     }
 
                     SUB_LOOP_LSOLVE: for (int k = 0; k < 4; k++) {
-                        //#pragma HLS UNROLL
                         temp[k] -= t[k];
                     }
 
                     WRITE_RES_LOOP_LSOLVE: for (int k = 0; k < 4; k++) {
-                        //#pragma HLS UNROLL
                         result[ir_vec[k]] = temp[k];
                     }
                 }

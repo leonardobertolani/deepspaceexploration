@@ -20,7 +20,6 @@ void spmtvm_vec_compute(spm_info info, hls::stream<col_len>& cols_len, hls::stre
         cols_to_read++;
     }
     SPMTVMVEC_COMP_OUT: for (int i = 0; i < cols_to_read; i++) {
-        //#pragma HLS PIPELINE
         #pragma HLS LOOP_TRIPCOUNT min=100 max=223
         double_vec y_t = 0.0;
         col_len cls[4];
@@ -61,7 +60,6 @@ void spmtvm_vec_compute(spm_info info, hls::stream<col_len>& cols_len, hls::stre
                 int4_vec ir_vec = ir_padded.read();
                 double_vec pr_vec = pr_padded.read();
                 SPMTVEC_COMP_SMALL: for (int k = 0; k < cl.cl; k++) {
-                    //#pragma HLS PIPELINE II=4
                     #pragma HLS PIPELINE off
                     int iri = ir_vec[k];
                     if (!(!skip_diagonal.is_zero() && col_idx == iri)) {
@@ -145,7 +143,6 @@ void spmtvm_vec(spm_info info, int_vec jc[], int_vec ir[], double_vec pr[], doub
 
     DTYPE gbuff[G_BUFF_SIZE] = {0.0};
     #pragma HLS BIND_STORAGE variable=gbuff type=ram_t2p impl=BRAM
-    //#pragma HLS ARRAY_PARTITION variable=gbuff type=cyclic factor=8
     
     hls::stream<int_vec> jc_stream("jc_stream"), ir_stream("ir_stream");
     hls::stream<double_vec> pr_stream("pr_stream"), x_stream("x_stream"), y_stream("y_stream"); 
