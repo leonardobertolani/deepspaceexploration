@@ -1,44 +1,41 @@
-# aca25-deepspace-fpga
-ACA 2025 project made by Samuele Tondelli and Leonardo Bertolani.
+# Fly Like an Eagle: Accelerating Embedded Convex Solver for Autonomous Deep Space Satellites
+An FPGA project made by Samuele Tondelli and Leonardo Bertolani for the AMD Open Hardware Competition.
 
 ## Description
-The goal of this project was making an accelator on the fpga of the Kria KD240 to accelerate the resolution of SOCP problems on embedded platforms, which is required for the emerging problem of autonomous deep space exploration. We focused on Ecos, an open source library designed to solve said problems, and decided to accelerate 5 specific functions:
-- **spmv**, sparse matrix vector multiplication
-- **spmtvm**, spmv with the matrix transposed
-- **lsolve**, solves the L part of an LDLt system
-- **dsolve**, solves the D part of an LDLt system
-- **ltsolve**, solves the Lt part of an LDLt system
+This project aims to create an FPGA accelerator on the Kria KD240 board to speed up the resolution of SOCP (Second-Order Cone Programming) problems on embedded platforms. This capability is essential for the emerging field of autonomous deep space exploration. We focused on ECOS, an open-source library designed to solve such problems, and decided to accelerate five specific functions:
+- **spmv**: Sparse matrix-vector multiplication.
+- **spmtvm**: Transposed sparse matrix-vector multiplication.
+- **lsolve**: Solves the L part of an LDLt system.
+- **dsolve**: Solves the D part of an LDLt system.
+- **ltsolve**: Solves the Lt part of an LDLt system.
 
-We developed the project using Vitis HLS, and creatd a monolithic accelerator called **xlr8_vec**.
+The project was developed using Vitis HLS, creating a monolithic accelerator called xlr8_vec.
 
-## Structure of the repository
-- **bitstream**, contains the necessary files to upload the bitstream
-- **ecos-x**, contains the modified version of ecos using our accelerator, with the bindings found in ```external/xlr8```
-- **images**, contains the images for readme
-- **logs**, contains the source to measure the power consumption
-- **power_hw**, contains the sources used to generate the power measurements
-- **xlr8**, contains the HLS sources, with files finishing in ```_tb``` being the testbench files
-- **xrt_text**, contains the benchmarks for the single functions
+## Repository Structure
+- **bitstream**: Contains the necessary files for uploading the bitstream.
+- **images**: Images used in the README.
+- **logs**: Scripts and files for measuring power consumption.
+- **power_hw**: Sources for generating power measurements.
+- **xlr8**: Contains the HLS source files. Files with the suffix ```_tb``` are testbench files.
 
 ## Usage
-For development, we used Vitis 2024.2, building the IP with the following process:
-- Create a new component, with target platform ```xck24-ubva530-2LV-c``` and target clock ```7ns``` with uncertainty ```1ns```
-- Add to the source all non testbench files in every folder finishing with _vec, and optionally add the ```xlr8_vec_tb.cpp``` as testbench
-- Run the Synthesis and the Package step in Vitis to create the IP
+For development, we used Vitis 2024.2. The IP creation process is as follows:
+- Create a new component with the target platform ```xck24-ubva530-2LV-c```, a target clock of ```7ns```, and an uncertainty of ```1ns```.
+- Add all non-testbench files from folders ending with ```_vec``` as sources. You can optionally add ```xlr8_vec_tb.cpp``` as a testbench.
+- Run the Synthesis and Package steps in Vitis to generate the IP.
 
-To actually generate the bitstream, we used Vivado 2024.2 with the following process:
-- Create a new project with target platform Kria KD240
-- Import the generated IP and create a new block design, enabling all the slave AXI HP and setting the PL fabric clocks PL0 and PL1 to 250 MHz, you should create a block design similar to this:
+To generate the bitstream, we used Vivado 2024.2 with the following procedure:
+- Create a new project with the Kria KD240 as the target platform.
+- Import the generated IP and create a new Block Design. Enable all AXI HP slaves and set ```PL``` fabric clocks ```PL0``` and ```PL1``` to ```250 MHz```. The Block Design should look like this:
 
 ![Block design](./images/block_design.png)
 
-- Then create an HDL wrapper and run the Synthesis and Implementation, as strategies we used respectively ```Flow_PerfOptimized_high``` and ```Performance_ExplorePostRoutePhysOpt```
-- Then generate the bitstream and export the hardware to get the necessary files, which can also be found in this repository under ```bitstream```
+- Create an HDL wrapper and run the Synthesis and Implementation steps. For strategies, we used ```Flow_PerfOptimized_high``` and ```Performance_ExplorePostRoutePhysOpt```, respectively.
+- Generate the bitstream and export the hardware to get the necessary files, which can also be found in the bitstream folder of this repository.
 
-**Note**: the generated bitstream has a negative WNS, but from testing we didn't find and sign of instability.
+Note: The generated bitstream has a negative WNS (Worst Negative Slack), but we found no signs of instability during our tests.
 
-Once the necessary files are generated, upload them to the Kria using the Jupyter Notebook of the PYNQ enviroment like so:
-
+Once the files are generated, upload them to the Kria board using the PYNQ environment and a Jupyter Notebook, as shown below:
 ```python
 from pynq import Overlay
 import pynq
@@ -48,8 +45,12 @@ ov = Overlay("./deep_space_vec_250_wrapper.bit")
 ```
 
 ## Benchmarks
-All of the benchmarks can be built with their respective Makefile by running ```make```. To test ecos-x, we built it with ```make all``` and run the example ```runecos```. Only ```logs/log_power.c``` doesn't have a Makefile, but can be built with
+All benchmarks can be built with their respective Makefiles by running ```make```. The ```logs/log_power.c``` file is the only exception and can be compiled with:
 ```
 gcc -o log_power log_power.c -O3
 ```
 
+To try out the code, simply run the following command, which will build the environment, load the bitstream, and launch the ```xrt_test``` script:
+```
+sudo ./setup.sh
+```
