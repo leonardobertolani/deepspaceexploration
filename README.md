@@ -17,11 +17,12 @@ The project was developed using Vitis HLS, creating a monolithic accelerator cal
 - **logs**: Scripts and files for measuring power consumption.
 - **power_hw**: Sources for generating power measurements.
 - **xlr8**: Contains the HLS source files. Files with the suffix ```_tb``` are testbench files.
+- **xrt_test**: Contains the sources for the time benchmarks.
 
 ## Usage
 For development, we used Vitis 2024.2. The IP creation process is as follows:
 - Create a new component with the target platform ```xck24-ubva530-2LV-c```, a target clock of ```7ns```, and an uncertainty of ```1ns```.
-- Add all non-testbench files from folders ending with ```_vec``` as sources. You can optionally add ```xlr8_vec_tb.cpp``` as a testbench.
+- Add all non-testbench files from directories under ```xlr8```. You can optionally add ```xlr8_vec_tb.cpp``` as a testbench.
 - Run the Synthesis and Package steps in Vitis to generate the IP.
 
 To generate the bitstream, we used Vivado 2024.2 with the following procedure:
@@ -50,7 +51,14 @@ All benchmarks can be built with their respective Makefiles by running ```make``
 gcc -o log_power log_power.c -O3
 ```
 
-To try out the code, simply run the following command, which will build the environment, load the bitstream, and launch the ```xrt_test``` script:
+To try out the code, simply run the following command, which will build the environment, load the bitstream, and launch the ```time_bench``` executable:
 ```
 sudo ./setup.sh
 ```
+
+To just launch the timing benchmarks, once everything is built and the bitstream is loaded, run:
+```
+sudo ./xrt_test/build/time_bench
+```
+
+Power measurements can be run by launching at the same time the ```power_hw``` and the ```log_power``` executables, with the latter printing the measurements.
